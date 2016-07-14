@@ -1,0 +1,44 @@
+using UnityEngine;
+using System.Collections;
+
+public class InputsHandler : MonoBehaviour {
+	// this script only captures mouse click,
+	// when build for mobile, need to add function to capture touch input
+	// ref: https://docs.unity3d.com/Manual/MobileInput.html
+	public Camera cam;
+
+	public GameObject projectileObj;
+	public Transform firingPoint; 
+	public float speed = 100;
+
+	// Use this for initialization
+	void Start () {
+		if (cam == null) {
+			cam = Camera.main;
+		}
+	}
+	
+	// Update is called once per frame
+	void Update () {
+		if (Input.GetMouseButtonDown (0)) {
+			// detect left mouse click
+			// get the location of mouse position on screen
+			Vector3 mousePos = Input.mousePosition;
+			mousePos.z = 0 - cam.transform.position.z;
+			Vector3 wantedPos = cam.ScreenToWorldPoint (mousePos);
+
+			// create an an ojbect at mouse click position
+			GameObject projectile = Instantiate(projectileObj, firingPoint.position, Quaternion.identity) as GameObject;
+
+			// calculate the angle between game object and wanted posistion
+			Vector3 diff = wantedPos - projectile.transform.position;
+			diff.Normalize();
+			float rot_z = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
+			// gameojbect "look at" wanted position
+			projectile.transform.rotation = Quaternion.Euler(0f, 0f, rot_z);
+
+			// add velocity based on deltatime and speed
+			projectile.GetComponent<Rigidbody2D>().velocity = diff * Time.deltaTime * speed;
+		}
+	}
+}
